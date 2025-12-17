@@ -11,17 +11,18 @@
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx ."
   },
-  "build": {
-    "appId": "com.gpkp.attendance",
-    "productName": "GPKP Attendance System",
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "Arman-Shaikh58",
-        "repo": "GPKP_Attendance_System_Desktop_App"
+  "publishers": [
+    {
+      "name": "@electron-forge/publisher-github",
+      "config": {
+        "repository": {
+          "owner": "Arman-Shaikh58",
+          "name": "GPKP_Attendance_System_Desktop_App"
+        },
+        "prerelease": false
       }
-    ]
-  },
+    }
+  ],
   "keywords": [],
   "author": "Nikhil Arman Pranav",
   "contributors": [
@@ -48,6 +49,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
     "@electron-forge/plugin-fuses": "^7.10.2",
     "@electron-forge/plugin-vite": "^7.10.2",
+    "@electron-forge/publisher-github": "^7.10.2",
     "@electron/fuses": "^1.8.0",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/electron-squirrel-startup": "^1.0.2",
