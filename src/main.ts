@@ -113,29 +113,28 @@ function initAutoUpdater() {
 
   autoUpdater.on("update-available", () => {
     dialog.showMessageBox({
-      type: "info",
       title: "Update Available",
-      message: "A new version is available. Downloading now..."
+      message: "A new version is downloading..."
     });
   });
 
   autoUpdater.on("update-downloaded", () => {
     dialog.showMessageBox({
-      type: "info",
-      title: "Update Ready ",
-      message: "Update downloaded. Restart to apply the update?",
+      title: "Update Ready",
+      message: "Restart to apply update?",
       buttons: ["Restart", "Later"]
-    }).then(result => {
-      if (result.response === 0) {
+    }).then(res => {
+      if (res.response === 0) {
         autoUpdater.quitAndInstall();
       }
     });
   });
 
-  autoUpdater.on("error", (err) => {
-    log.error("Auto update error:", err);
+  autoUpdater.on("error", err => {
+    log.error("Updater error:", err);
   });
 }
+
 
 
 const createWindow = () => {
@@ -162,6 +161,7 @@ app.whenReady().then(() => {
   createWindow();
   initAutoUpdater();
 });
+
 
 
 app.on('window-all-closed', () => {

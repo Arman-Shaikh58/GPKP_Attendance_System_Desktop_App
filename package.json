@@ -14,11 +14,13 @@
   "build": {
     "appId": "com.gpkp.attendance",
     "productName": "GPKP Attendance System",
-    "publish": {
-      "provider": "github",
-      "owner": "Arman-Shaikh58",
-      "repo": "GPKP_Attendance_System_Desktop_App"
-    }
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Arman-Shaikh58",
+        "repo": "GPKP_Attendance_System_Desktop_App"
+      }
+    ]
   },
   "keywords": [],
   "author": "Nikhil Arman Pranav",
@@ -56,7 +58,6 @@
     "@typescript-eslint/parser": "^5.62.0",
     "autoprefixer": "^10.4.22",
     "electron": "39.2.4",
-    "electron-builder": "^26.0.12",
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.32.0",
     "postcss": "^8.5.6",
