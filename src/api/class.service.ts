@@ -1,0 +1,64 @@
+import apiClient from "./axios";
+export interface IClassInfo{
+    _id:string;
+    division:string;
+    year:number;
+    branch:{
+        _id:string;
+        code:string;
+        name:string;
+        abbrivation:string;
+    }
+    studentCount:number;
+}
+
+export interface Student {
+  _id: string;
+  name: string;
+  roll_num: string;
+}
+
+export interface Batch {
+  _id: string;
+  name: string;
+  from: number;
+  to: number;
+  students: Student[];
+}
+
+export interface Branch {
+  _id: string;
+  code: string;
+  abbrivation: string;
+  name: string;
+}
+
+export interface ClassData {
+  _id: string;
+  division: string;
+  year: number;
+  branch: Branch;
+  batches: Batch[];
+}
+
+export const getClassesinfo = async () =>{
+    try {
+        const response = await apiClient.get('/class/classes-info');
+        return response.data.classes;
+    } catch (error) {
+        console.log("Failed to Retrive classes Info");
+        throw error;
+    }
+}
+
+export const getClassInfo = async(classId:string)=>{
+    try{
+        const response = await apiClient.get(`/class/class/${classId}/details`);
+        console.log(response)
+        return response.data.class
+
+    }catch(error){
+        console.log("Failed to Retrive class Info");
+        throw error;
+    }
+}
