@@ -30,7 +30,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
     Dialog,
@@ -177,52 +176,10 @@ export default function Analytics() {
         return (
             <div className="flex flex-col">
                 <div className="items-center pb-0 text-center">
-                    <h4 className="text-sm font-semibold">{title}</h4>
+                    <h4 className="text-sm font-semibold text-accent-foreground">{title}</h4>
                     <span className="text-xs text-muted-foreground">Attendance Overview</span>
                 </div>
                 <div className="flex-1 pb-0">
-                    {/* <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
-                        <PieChart>
-                            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                            <Pie
-                                data={chartData}
-                                dataKey="visitors"
-                                nameKey="browser"
-                                innerRadius={60}
-                                strokeWidth={5}
-                            >
-                                <Label
-                                    content={({ viewBox }) => {
-                                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                                            return (
-                                                <text
-                                                    x={viewBox.cx}
-                                                    y={viewBox.cy}
-                                                    textAnchor="middle"
-                                                    dominantBaseline="middle"
-                                                >
-                                                    <tspan
-                                                        x={viewBox.cx}
-                                                        y={viewBox.cy}
-                                                        className="fill-foreground text-3xl font-bold"
-                                                    >
-                                                        {percentage}%
-                                                    </tspan>
-                                                    <tspan
-                                                        x={viewBox.cx}
-                                                        y={(viewBox.cy || 0) + 24}
-                                                        className="fill-muted-foreground text-xs"
-                                                    >
-                                                        Present
-                                                    </tspan>
-                                                </text>
-                                            )
-                                        }
-                                    }}
-                                />
-                            </Pie>
-                        </PieChart>
-                    </ChartContainer> */}
                     <ChartContainer
                         config={chartConfig}
                         className="[&_.recharts-pie-label-text]:fill-foreground mx-auto aspect-square max-h-[250px] pb-0"
@@ -256,21 +213,21 @@ export default function Analytics() {
                     <BarChart2 className="w-8 h-8 text-primary" />
                 </div>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+                    <h1 className="text-3xl text-accent-foreground font-bold tracking-tight">Analytics</h1>
                     <p className="text-muted-foreground">Detailed attendance report and student performance.</p>
                 </div>
             </div>
 
             <div className="flex gap-4 items-end">
                 <div className="w-full md:w-1/3 space-y-2">
-                    <label className="text-sm font-medium">Select Subject</label>
+                    <label className="text-sm text-accent-foreground font-medium">Select Subject</label>
                     <Select value={selectedSubject} onValueChange={setSelectedSubject} disabled={loadingSubjects}>
-                        <SelectTrigger>
+                        <SelectTrigger className='text-accent-foreground'>
                             <SelectValue placeholder={loadingSubjects ? "Loading..." : "Choose a subject"} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent >
                             {subjects.map((sub) => (
-                                <SelectItem key={sub._id} value={sub._id}>{sub.name}</SelectItem>
+                                <SelectItem className='text-accent-foreground' key={sub._id} value={sub._id}>{sub.name}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -403,7 +360,7 @@ export default function Analytics() {
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
                 <DialogContent className="sm:max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>Student Details</DialogTitle>
+                        <DialogTitle className='text-accent-foreground'>Student Details</DialogTitle>
                     </DialogHeader>
                     {selectedStudent && (
                         <div className="space-y-6">
@@ -412,13 +369,13 @@ export default function Analytics() {
                                     {selectedStudent.roll_num}
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-lg leading-none">{selectedStudent.name}</h3>
+                                    <h3 className="font-bold text-lg leading-none text-accent-foreground">{selectedStudent.name}</h3>
                                     <p className="text-sm text-muted-foreground mt-1">Batch: {selectedStudent.batch_name || 'N/A'}</p>
                                 </div>
                             </div>
 
                             <div>
-                                <h4 className="text-sm font-medium mb-4 flex items-center gap-2">
+                                <h4 className="text-sm font-medium mb-4 flex items-center gap-2 text-accent-foreground">
                                     <AlertCircle className="w-4 h-4" /> Attendance Performance
                                 </h4>
                                 <div className="grid grid-cols-2 gap-4">

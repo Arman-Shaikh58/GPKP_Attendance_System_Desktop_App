@@ -100,7 +100,7 @@ function Profile() {
             <User className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">My Profile</h1>
             <p className="text-muted-foreground">Manage your account settings and preferences.</p>
           </div>
         </div>
@@ -115,11 +115,11 @@ function Profile() {
           }
         }}>
           <DialogTrigger asChild>
-            <Button variant="outline">Change Password</Button>
+            <Button variant="outline" className='text-accent-foreground'>Change Password</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Change Password</DialogTitle>
+              <DialogTitle className='text-accent-foreground'>Change Password</DialogTitle>
               <DialogDescription>
                 {step === 'request'
                   ? "We will send an OTP to your registered email to verify your identity."
@@ -135,7 +135,7 @@ function Profile() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4 py-4">
+              <div className="space-y-4 py-4 text-accent-foreground">
                 <div className="space-y-2">
                   <Label>Enter OTP</Label>
                   <Input value={otp} onChange={(e) => setOtp(e.target.value.toUpperCase())} placeholder="Enter 6-digit OTP" />

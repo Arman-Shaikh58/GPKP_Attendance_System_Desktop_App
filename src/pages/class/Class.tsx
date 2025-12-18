@@ -74,7 +74,7 @@ const Class = () => {
           <School className="w-8 h-8 text-primary" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Class Details</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">Class Details</h1>
           <p className="text-muted-foreground">Manage students and class information.</p>
         </div>
       </div>

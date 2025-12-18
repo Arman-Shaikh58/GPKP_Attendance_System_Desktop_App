@@ -80,7 +80,7 @@ export default function Teachers() {
             <Users className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Teachers</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">Teachers</h1>
             <p className="text-muted-foreground">Manage faculty accounts and permissions.</p>
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function Teachers() {
                     </TableCell>
                     <TableCell>
                       {teacher.isVerified ?
-                        <Badge variant="default" className="bg-green-500/15 text-green-700 hover:bg-green-500/25 border-green-200">Verified</Badge> :
+                        <Badge variant="default" className="bg-green-500/15 text-green-700 dark:text-green-500 hover:bg-green-500/25 border-green-200">Verified</Badge> :
                         <Badge variant="secondary" className="text-yellow-600 bg-yellow-100">Pending</Badge>
                       }
                     </TableCell>

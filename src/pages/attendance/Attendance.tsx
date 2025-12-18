@@ -200,7 +200,7 @@ export default function Attendance() {
           <CheckCircle className="w-8 h-8 text-primary" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Attendance</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">Attendance</h1>
           <p className="text-muted-foreground">Mark attendance for your class or practical sessions.</p>
         </div>
       </div>

@@ -309,7 +309,7 @@ export default function Subject() {
             <BookOpen className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard & Subjects</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">Dashboard & Subjects</h1>
             <p className="text-muted-foreground">Manage your classes and attendances.</p>
           </div>
         </div>
@@ -329,13 +329,13 @@ export default function Subject() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add New Subject</DialogTitle>
+                <DialogTitle className='text-accent-foreground'>Add New Subject</DialogTitle>
                 <DialogDescription>
                   Enter the details for the new subject below.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
-                <div className="space-y-2">
+                <div className="space-y-2 text-accent-foreground">
                   <Label>Subject Name</Label>
                   <Input
                     placeholder="e.g. Data Structures"
@@ -343,7 +343,7 @@ export default function Subject() {
                     onChange={(e) => setNewSubject({ ...newSubject, name: e.target.value })}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 text-accent-foreground">
                   <div className="space-y-2">
                     <Label>Code</Label>
                     <Input
@@ -352,7 +352,7 @@ export default function Subject() {
                       onChange={(e) => setNewSubject({ ...newSubject, code: e.target.value })}
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 ">
                     <Label>Abbreviation</Label>
                     <Input
                       placeholder="e.g. DSU"
@@ -361,7 +361,7 @@ export default function Subject() {
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 text-accent-foreground">
                   <Label>Class</Label>
                   <Select value={newSubject.class_id} onValueChange={(val) => setNewSubject({ ...newSubject, class_id: val })}>
                     <SelectTrigger>
@@ -378,7 +378,7 @@ export default function Subject() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                <Button variant="outline" className='text-accent-foreground' onClick={() => setIsAddOpen(false)}>Cancel</Button>
                 <Button onClick={handleCreate} disabled={creating}>{creating ? "Creating..." : "Create Subject"}</Button>
               </DialogFooter>
             </DialogContent>

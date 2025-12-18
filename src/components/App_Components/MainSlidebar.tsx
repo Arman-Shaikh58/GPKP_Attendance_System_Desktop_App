@@ -93,20 +93,14 @@ const MainSlidebar = () => {
           </div>
         )}
 
-        {collapsed && (
-          <div className="flex h-10 w-10 mx-auto items-center justify-center rounded-lg bg-primary shadow-sm">
-            <img src={logo} alt="GPKP" className="h-6 w-6 object-contain" />
-          </div>
-        )}
-
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="flex h-8 w-8 items-center justify-center rounded-md border border-sidebar-border bg-background hover:bg-accent"
         >
           {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 text-accent-foreground" />
           ) : (
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4 text-accent-foreground" />
           )}
         </button>
       </div>
@@ -123,7 +117,7 @@ const MainSlidebar = () => {
                 variant={active ? "default" : "ghost"}
                 size={collapsed ? "icon" : "default"}
                 className={cn(
-                  "w-full transition-all",
+                  "w-full transition-all text-accent-foreground",
                   collapsed
                     ? "h-10 justify-center"
                     : "h-10 justify-start gap-3 px-3",
@@ -161,25 +155,25 @@ const MainSlidebar = () => {
                 collapsed && "justify-center px-2"
               )}
             >
-              <Settings className="h-5 w-5" />
-              {!collapsed && <span>Settings</span>}
+              <Settings className="h-5 w-5 text-accent-foreground" />
+              {!collapsed && <span className="text-accent-foreground">Settings</span>}
             </Button>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
             side="right"
             align="start"
-            className={cn("w-48", collapsed && "ml-2")}
+            className={cn("w-48 bg-secondary rounded", collapsed && "ml-2")}
           >
-            <DropdownMenuItem onClick={() => navigate("/profile")}>
-              <User className="mr-2 h-4 w-4" />
+            <DropdownMenuItem onClick={() => navigate("/profile")} className="text-accent-foreground">
+              <User className="mr-2 h-4 w-4 text-accent-foreground"  />
               Profile
             </DropdownMenuItem>
 
             {/* Theme Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <DropdownMenuItem className="flex items-center justify-between">
+                <DropdownMenuItem className="flex items-center justify-between text-accent-foreground">
                   <div className="flex items-center gap-2">
                     <Sun className="h-4 w-4" />
                     Theme
@@ -188,27 +182,27 @@ const MainSlidebar = () => {
                 </DropdownMenuItem>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent side="right" className="w-40">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
-                  <Sun className="mr-2 h-4 w-4" />
+              <DropdownMenuContent side="right" className="w-40 bg-secondary rounded">
+                <DropdownMenuItem onClick={() => setTheme("light")} className="text-accent-foreground">
+                  <Sun className="mr-2 h-4 w-4 text-yellow-200" />
                   Light
                 </DropdownMenuItem>
 
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                <DropdownMenuItem onClick={() => setTheme("dark")} className="text-accent-foreground">
                   <Moon className="mr-2 h-4 w-4" />
                   Dark
                 </DropdownMenuItem>
 
-                <DropdownMenuItem onClick={() => setTheme("system")}>
-                  <SettingsIcon className="mr-2 h-4 w-4" />
+                <DropdownMenuItem onClick={() => setTheme("system")} className="text-accent-foreground">
+                  <SettingsIcon className="mr-2 h-4 w-4 text-accent-foreground" />
                   System
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
+            <DropdownMenuItem onClick={handleLogout} className="">
+              <LogOut className="mr-2 h-4 w-4 text-red-400" />
+              <span className="text-red-400 hover:text-red-400">Logout</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -195,7 +195,7 @@ export default function AttendanceLogsTable() {
   return (
     <div className="p-8">
       <div className="space-y-1">
-        <h2 className="text-2xl font-bold tracking-tight">
+        <h2 className="text-2xl font-bold tracking-tight text-accent-foreground">
           <span className="text-bold">Subject:</span>{" "}
           {subjectName ?? "Attendance Logs"}
         </h2>
@@ -233,14 +233,14 @@ export default function AttendanceLogsTable() {
             ) : logs.length > 0 ? (
               logs.map((log) => (
                 <TableRow key={log._id}>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium text-accent-foreground ">
                     {format(new Date(log.date), "PPP")}
                     <div className="text-xs text-muted-foreground">
                       {format(new Date(log.date), "EEE")}
                     </div>
                   </TableCell>
-                  <TableCell className="capitalize">{log.a_type}</TableCell>
-                  <TableCell>
+                  <TableCell className="capitalize text-accent-foreground">{log.a_type}</TableCell>
+                  <TableCell className="text-accent-foreground">
                     {typeof log.batch_id === "object"
                       ? (log.batch_id as any).name
                       : log.batch_id
@@ -253,7 +253,7 @@ export default function AttendanceLogsTable() {
                         {log.absentees.slice(0, 2).map((rollNo) => (
                           <p
                             key={rollNo}
-                            className="bg-red-200 px-2 py-0.5 rounded-full border border-red-400 text-xs"
+                            className="bg-red-200 px-2 py-0.5 rounded-full border border-red-400 dark:border-red-800 dark:bg-red-500 dark:text-black text-xs"
                           >
                             {rollNo}
                           </p>
@@ -330,14 +330,14 @@ export default function AttendanceLogsTable() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogTitle className="text-accent-foreground">Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
                 This action cannot be undone. This will permanently delete this
                 attendance record.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel className="text-accent-foreground">Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDelete}
                 className="bg-red-500 hover:bg-red-600"
@@ -349,21 +349,22 @@ export default function AttendanceLogsTable() {
         </AlertDialog>
 
         {/* Edit Dialog */}
-        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}  >
           <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Attendance</DialogTitle>
+              <DialogTitle className="text-accent-foreground">Edit Attendance</DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
+            <div className="space-y-4 py-4 text-accent-foreground">
+              <div className="space-y-2 ">
                 <label className="text-sm font-medium">Date</label>
-                <div className="border rounded-md p-2">
+                <div className=" rounded-md p-2  flex flex-col justify-center items-center">
                   <Calendar
                     mode="single"
                     selected={editDate}
                     onSelect={setEditDate}
                     initialFocus
+                    className="border rounded-2xl"
                   />
                 </div>
               </div>
@@ -464,7 +465,7 @@ export default function AttendanceLogsTable() {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditOpen(false)}>
+              <Button variant="outline" className="text-accent-foreground" onClick={() => setIsEditOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleUpdate} disabled={updating}>
