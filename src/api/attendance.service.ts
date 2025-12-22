@@ -1,4 +1,8 @@
 import api from "./axios";
+import { getOfflineRequests, removeOfflineRequest } from "../utils/offlineStorage";
+import { saveOfflineRequest } from "../utils/offlineStorage";
+
+
 
 export interface AttendanceData {
     subject_id: string;
@@ -14,7 +18,21 @@ export interface AttendanceData {
     _id?: string; // Present in response
 }
 
+
+
 export const markAttendance = async (data: AttendanceData) => {
+    if (!navigator.onLine) {
+        saveOfflineRequest({
+            url: "/attendance/mark",
+            method: "POST",
+            data
+        });
+        return {
+            message: "You are offline. Attendance saved locally and will be synced when back online.",
+            offline: true
+        };
+    }
+
     try {
         const response = await api.post("/attendance/mark", data);
         return response.data;
@@ -64,7 +82,7 @@ export interface ExportData {
         name: string;
         code: string;
         abbrivation: string;
-        branchName:string;
+        branchName: string;
     };
     dates: {
         date: string;
@@ -96,7 +114,7 @@ export interface ExportPracticalData {
         code: string;
         abbrivation: string;
         class_id: string;
-        branchName:string;
+        branchName: string;
     };
     batches: {
         _id: string;
@@ -122,5 +140,28 @@ export const getPracticalAttendanceExportData = async (subjectId: string) => {
     } catch (error) {
         console.error("Error fetching practical export data:", error);
         throw error;
+    }
+};
+
+
+export const syncOfflineRequests = async () => {
+    const queue = getOfflineRequests();
+    if (queue.length === 0) return;
+
+    for (const req of queue) {
+        try {
+            await api({
+                method: req.method,
+                url: req.url,
+                data: req.data,
+            });
+            // If successful, remove from queue
+            removeOfflineRequest(req.id);
+            console.log(`Synced request ${req.id}`);
+        } catch (error) {
+            console.error(`Failed to sync request ${req.id}:`, error);
+            // Optionally, we could implement a retry count or keep it in the queue
+            // For now, we keep it in queue if it fails (e.g. still offline or server error)
+        }
     }
 };

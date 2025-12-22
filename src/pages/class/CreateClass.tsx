@@ -92,7 +92,7 @@ const CreateClass = () => {
     const year = getYearLabel(formData.year).toUpperCase() || "Year";
 
     // Final classname logic (progressive)
-    const autoClassName = `${year} - ${branchAbbr} - ${division}`;
+    const autoClassName = `${year} ${branchAbbr} Division-${division}`;
 
     setFormData((prev) => ({ ...prev, class_name: autoClassName }));
   }, [formData.branch, formData.division, formData.year]);

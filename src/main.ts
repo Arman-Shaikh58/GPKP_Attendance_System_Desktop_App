@@ -18,8 +18,8 @@ log.transports.file.level = "info";
 autoUpdater.logger = log;
 
 autoUpdater.autoDownload = true;
-
-const SECRET_KEY=process.env.SECRET_KEY;
+const SECRET_KEY="qxBvfG9MgW4ps8%mdrkv$KFn3ht!7x02";
+// const SECRET_KEY=process.env.SECRET_KEY;
 const IV_LENGTH = 16;
 
 

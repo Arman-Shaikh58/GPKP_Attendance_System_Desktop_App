@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { getClassName } from '@/utils/getClassName';
 
 
 export default function Attendance() {
@@ -213,16 +214,16 @@ export default function Attendance() {
               Session Details
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 w-full">
             <div className="space-y-2">
               <label className="text-sm font-medium">Subject</label>
-              <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                <SelectTrigger>
+              <Select value={selectedSubject} onValueChange={setSelectedSubject} >
+                <SelectTrigger className='w-full'>
                   <SelectValue placeholder="Select Subject" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='w-full'>
                   {subjects.map((sub) => (
-                    <SelectItem key={sub._id} value={sub._id}>{sub.name}</SelectItem>
+                    <SelectItem key={sub._id} value={sub._id}>{sub.name} - {getClassName(sub.year, sub.branch_abbrivation, sub.division)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

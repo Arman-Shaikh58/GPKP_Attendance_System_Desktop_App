@@ -15,6 +15,7 @@ import Branches from './pages/branches/Branches';
 import Teachers from './pages/teachers/Teachers';
 import Profile from './pages/profile/Profile';
 import Analytics from './pages/analytics/analytics';
+import { OnlineStatusBar } from './components/App_Components/OnlineStatusBar';
 
 const ProtectedRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -57,6 +58,7 @@ const App: React.FC = () => {
     <ThemeProvider>
       <Router>
         <Toaster position="top-right" richColors />
+        <OnlineStatusBar />
         <Routes>
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />

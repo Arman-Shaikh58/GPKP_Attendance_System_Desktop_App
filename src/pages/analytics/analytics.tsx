@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getTeacherSubjects, Subject } from '@/api/subject.service';
 import { getSubjectAnalytics, SubjectAnalyticsData, StudentAnalytics } from '@/api/analytics.service';
 import { getBatchesByClass, Batch } from '@/api/batch.service';
+import { getClassName } from '@/utils/getClassName';
 import { toast } from 'sonner';
 import {
     BarChart2,
@@ -77,6 +78,7 @@ export default function Analytics() {
         try {
             const data = await getTeacherSubjects();
             setSubjects(data);
+            console.log(data);
         } catch (error) {
             console.error(error);
             toast.error("Failed to load subjects");
@@ -207,7 +209,7 @@ export default function Analytics() {
     );
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
+        <div className="p-6 max-w-12xl mx-auto space-y-6">
             <div className="flex items-center gap-4 mb-6">
                 <div className="p-3 bg-primary/10 rounded-xl">
                     <BarChart2 className="w-8 h-8 text-primary" />
@@ -227,7 +229,7 @@ export default function Analytics() {
                         </SelectTrigger>
                         <SelectContent >
                             {subjects.map((sub) => (
-                                <SelectItem className='text-accent-foreground' key={sub._id} value={sub._id}>{sub.name}</SelectItem>
+                                <SelectItem className='text-accent-foreground' key={sub._id} value={sub._id}>{sub.name} - {getClassName(sub.year, sub.branch_abbrivation, sub.division)} </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
