@@ -1,7 +1,7 @@
 {
   "name": "gpkp_attendance_system",
   "productName": "GPKP Attendance System",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "This is desktop application of GPKP Attendance System",
   "main": ".vite/build/main.js",
   "scripts": {

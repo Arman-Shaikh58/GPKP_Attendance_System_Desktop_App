@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import MyBreadCrumb from "@/components/App_Components/MyBreadCrumb";
 import { useParams } from "react-router-dom";
 import { ClassData, getClassInfo } from "@/api/class.service";
+import { removeStudentFromClass, editStudent, addStudentToClass } from "@/api/student.service";
 import { getClassName } from "@/utils/getClassName";
-import { School, Info } from "lucide-react";
+import { School, Info, RemoveFormattingIcon, Delete, Edit } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -24,6 +26,27 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Label } from "@/components/ui/label";
+import { Student } from "@/api/student.service";
+import { toast } from "sonner";
 
 const Class = () => {
   const [loading, setLoading] = useState(true);
@@ -33,23 +56,113 @@ const Class = () => {
 
   const { id } = useParams();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const res = await getClassInfo(id);
-        setClassInfo(res);
+  // Dialog States
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-        if (res.batches?.length > 0) {
-          setSelectedBatchId(res.batches[0]._id);
-        }
-      } finally {
-        setLoading(false);
+  // Data States
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+
+  // Form States
+  const [newStudentName, setNewStudentName] = useState("");
+  const [newStudentRoll, setNewStudentRoll] = useState("");
+  const [editStudentName, setEditStudentName] = useState("");
+
+  const [editStudentRoll, setEditStudentRoll] = useState("");
+
+  const fetchData = async () => {
+    try {
+      // Don't set loading to true here to avoid full page flicker on refresh
+      const res = await getClassInfo(id);
+      setClassInfo(res);
+
+      // Preserve selected batch if it exists, otherwise select first
+      if (res.batches?.length > 0 && !selectedBatchId) {
+        setSelectedBatchId(res.batches[0]._id);
       }
-    };
+    } catch (error) {
+      console.error("Failed to fetch class info", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    setLoading(true);
     fetchData();
-  }, []);
+  }, [id]);
+
+  const handleAddStudent = async () => {
+    if (!newStudentRoll) {
+      toast.error("Student Roll No can't be empty");
+      return;
+    }
+    if (!newStudentName) {
+      toast.error("Student Name can't be empty");
+      return;
+    }
+
+    try {
+      await addStudentToClass(classInfo._id, newStudentName, newStudentRoll);
+      setNewStudentName("");
+      setNewStudentRoll("");
+      setIsAddOpen(false);
+      fetchData();
+      toast.success("Student added successfully");
+    } catch (error) {
+      toast.error("Failed to add student");
+      console.error("Error adding student", error);
+    }
+  };
+
+  const handleEditClick = (student: any) => {
+    setSelectedStudent(student);
+    setEditStudentName(student.name);
+    setEditStudentRoll(student.roll_num.toString());
+    setIsEditOpen(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!selectedStudent) return;
+    if (!editStudentRoll) {
+      toast.error("Student Roll No can't be empty");
+      return;
+    }
+    if (!editStudentName) {
+      toast.error("Student Name can't be empty");
+      return;
+    }
+    try {
+      await editStudent(selectedStudent._id, editStudentName, editStudentRoll);
+      setIsEditOpen(false);
+      setSelectedStudent(null);
+      fetchData();
+      toast.success("Student edited successfully");
+    } catch (error) {
+      toast.error("Failed to edit student");
+      console.error("Error editing student", error);
+    }
+  };
+
+  const handleDeleteClick = (student: any) => {
+    setSelectedStudent(student);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedStudent) return;
+    try {
+      await removeStudentFromClass(selectedStudent._id);
+      setIsDeleteDialogOpen(false);
+      setSelectedStudent(null);
+      fetchData();
+      toast.success("Student deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete student");
+      console.error("Error deleting student", error);
+    }
+  };
 
   if (loading || !classInfo) {
     return <h1>Loading...</h1>;
@@ -149,6 +262,13 @@ const Class = () => {
                   </SelectContent>
                 </Select>
 
+                <Button
+                  className="ml-2 bg-primary text-primary-foreground"
+                  onClick={() => setIsAddOpen(true)}
+                >
+                  Add Student
+                </Button>
+
                 <Input
                   placeholder="Search students..."
                   className="w-[200px]"
@@ -164,6 +284,7 @@ const Class = () => {
                 <TableRow>
                   <TableHead>Roll No</TableHead>
                   <TableHead>Name</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -172,6 +293,17 @@ const Class = () => {
                     <TableRow key={student._id}>
                       <TableCell className="font-medium">{student.roll_num}</TableCell>
                       <TableCell>{student.name}</TableCell>
+                      <TableCell className="flex gap-2">
+                        <Delete
+                          onClick={() => handleDeleteClick(student)}
+                          className="text-red-600 h-5 w-5 cursor-pointer hover:opacity-80"
+                        />
+                        <Edit
+                          onClick={() => handleEditClick(student)}
+                          className="text-primary h -5 w-5 cursor-pointer hover:opacity-80"
+                        />
+
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
@@ -186,7 +318,112 @@ const Class = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+
+      {/* Add Student Dialog */}
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Student</DialogTitle>
+            <DialogDescription>
+              Enter the details of the student to add to this class.
+              <br />
+              <span className="text-muted-foreground">
+                Batch will be selected automatically based on the roll number.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-left">
+                Name:
+              </Label>
+              <Input
+                id="name"
+                value={newStudentName}
+                onChange={(e) => setNewStudentName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="roll" className="text-left">
+                Roll No:
+              </Label>
+              <Input
+                id="roll"
+                value={newStudentRoll}
+                onChange={(e) => setNewStudentRoll(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleAddStudent}>Add Student</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Student Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Student</DialogTitle>
+            <DialogDescription>
+              Update the student&apos;s information.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-roll" className="text-right">
+                Roll No:
+              </Label>
+              <Input
+                id="edit-roll"
+                value={editStudentRoll}
+                onChange={(e) => setEditStudentRoll(e.target.value)}
+                className="col-span-3"
+                readOnly
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-name" className="text-right">
+                Name:
+              </Label>
+              <Input
+                id="edit-name"
+                value={editStudentName}
+                onChange={(e) => setEditStudentName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleEditSubmit}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the student{" "}
+              <span className="font-semibold text-foreground">
+                {selectedStudent?.name}
+              </span>{" "}
+              from this class.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div >
   );
 };
 

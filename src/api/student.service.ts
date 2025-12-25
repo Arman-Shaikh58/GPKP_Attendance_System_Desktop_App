@@ -27,3 +27,32 @@ export const getStudentsByBatch = async (batchId: string): Promise<Student[]> =>
         throw error;
     }
 };
+
+export const addStudentToClass = async (classId: string, studentName: string, studentRollNo: string) => {
+    try {
+        const response = await api.post('/students/add-student', { classId, studentName, studentRollNo });
+        return response.data;
+    } catch (error) {
+        console.log("Failed to add student to class");
+        throw error;
+    }
+}
+
+export const removeStudentFromClass = async (studentId: string) => {
+    try {
+        const response = await api.delete(`/students/delete-student/${studentId}`);
+        return response.data;
+    } catch (error) {
+        console.log("Failed to remove student from class");
+        throw error;
+    }
+}
+export const editStudent = async (studentId: string, studentName: string, studentRollNo: string) => {
+    try {
+        const response = await api.put(`/students/edit-student/${studentId}`, { name: studentName, roll_num: studentRollNo });
+        return response.data;
+    } catch (error) {
+        console.log("Failed to edit student");
+        throw error;
+    }
+}

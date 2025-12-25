@@ -1,15 +1,15 @@
 import apiClient from "./axios";
-export interface IClassInfo{
-    _id:string;
-    division:string;
-    year:number;
-    branch:{
-        _id:string;
-        code:string;
-        name:string;
-        abbrivation:string;
-    }
-    studentCount:number;
+export interface IClassInfo {
+  _id: string;
+  division: string;
+  year: number;
+  branch: {
+    _id: string;
+    code: string;
+    name: string;
+    abbrivation: string;
+  }
+  studentCount: number;
 }
 
 export interface Student {
@@ -41,24 +41,26 @@ export interface ClassData {
   batches: Batch[];
 }
 
-export const getClassesinfo = async () =>{
-    try {
-        const response = await apiClient.get('/class/classes-info');
-        return response.data.classes;
-    } catch (error) {
-        console.log("Failed to Retrive classes Info");
-        throw error;
-    }
+export const getClassesinfo = async () => {
+  try {
+    const response = await apiClient.get('/class/classes-info');
+    return response.data.classes;
+  } catch (error) {
+    console.log("Failed to Retrive classes Info");
+    throw error;
+  }
 }
 
-export const getClassInfo = async(classId:string)=>{
-    try{
-        const response = await apiClient.get(`/class/class/${classId}/details`);
-        console.log(response)
-        return response.data.class
+export const getClassInfo = async (classId: string) => {
+  try {
+    const response = await apiClient.get(`/class/class/${classId}/details`);
+    console.log(response)
+    return response.data.class
 
-    }catch(error){
-        console.log("Failed to Retrive class Info");
-        throw error;
-    }
+  } catch (error) {
+    console.log("Failed to Retrive class Info");
+    throw error;
+  }
 }
+
+

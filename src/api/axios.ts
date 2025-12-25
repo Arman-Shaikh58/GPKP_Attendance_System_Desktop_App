@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../constants';
 import { deleteValue, getValue, setValue } from '@/utils/electronStoreService';
+import { toast } from 'sonner';
+
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -70,7 +72,6 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-import { toast } from 'sonner';
 
 apiClient.interceptors.response.use(
   async (response) => {
