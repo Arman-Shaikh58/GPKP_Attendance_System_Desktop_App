@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import apiClient from "./axios";
 export interface IClassInfo {
   _id: string;
@@ -64,3 +65,12 @@ export const getClassInfo = async (classId: string) => {
 }
 
 
+export const deleteClass = async (classId: string) => {
+  try {
+    await apiClient.delete(`/class/${classId}`);
+    toast.success("Deleted Class Successfully");
+  } catch (error) {
+    toast.error("Failed to Delete Class");
+    throw error;
+  }
+};

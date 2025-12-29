@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import MyBreadCrumb from "@/components/App_Components/MyBreadCrumb";
-import { useParams } from "react-router-dom";
-import { ClassData, getClassInfo } from "@/api/class.service";
+import { useParams, useNavigate } from "react-router-dom";
+import { ClassData, getClassInfo, deleteClass } from "@/api/class.service";
 import { removeStudentFromClass, editStudent, addStudentToClass } from "@/api/student.service";
 import { getClassName } from "@/utils/getClassName";
 import { School, Info, RemoveFormattingIcon, Delete, Edit } from "lucide-react";
@@ -55,11 +55,13 @@ const Class = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const { id } = useParams();
+  const navigate = useNavigate();
 
   // Dialog States
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleteClassOpen, setIsDeleteClassOpen] = useState(false);
 
   // Data States
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -164,6 +166,17 @@ const Class = () => {
     }
   };
 
+  const handleDeleteClass = async () => {
+    if (!classInfo?._id) return;
+    try {
+      await deleteClass(classInfo._id);
+      setIsDeleteClassOpen(false);
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting class", error);
+    }
+  };
+
   if (loading || !classInfo) {
     return <h1>Loading...</h1>;
   }
@@ -189,6 +202,14 @@ const Class = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">Class Details</h1>
           <p className="text-muted-foreground">Manage students and class information.</p>
+        </div>
+        <div className="ml-auto">
+          <Button
+            variant="destructive"
+            onClick={() => setIsDeleteClassOpen(true)}
+          >
+            Delete Class
+          </Button>
         </div>
       </div>
 
@@ -419,6 +440,32 @@ const Class = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Class Confirmation Dialog */}
+      <AlertDialog open={isDeleteClassOpen} onOpenChange={setIsDeleteClassOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the class{" "}
+              <span className="font-semibold text-foreground">
+                {classInfo && getClassName(
+                  classInfo.year,
+                  classInfo.branch.abbrivation,
+                  classInfo.division
+                )}
+              </span>{" "}
+              and all its associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteClass} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete Class
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

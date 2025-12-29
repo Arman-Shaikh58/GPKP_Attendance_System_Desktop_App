@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Plus } from "lucide-react";
+import { Delete, LayoutDashboard, Plus } from "lucide-react";
 import MyBreadCrumb from "@/components/App_Components/MyBreadCrumb";
 import {
   Table,
@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getClassesinfo, IClassInfo } from "@/api/class.service";
+import { deleteClass, getClassesinfo, IClassInfo } from "@/api/class.service";
 import { getClassName } from "@/utils/getClassName";
 import {
   Tooltip,
@@ -54,8 +54,8 @@ const Home = () => {
             <LayoutDashboard className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Overview of your institute.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">Classes</h1>
+            <p className="text-muted-foreground">All Classes</p>
           </div>
         </div>
         <Button onClick={() => navigate("/create-class")}>
