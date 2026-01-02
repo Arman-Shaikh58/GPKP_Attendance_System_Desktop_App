@@ -171,7 +171,7 @@ export default function Attendance() {
           from: fromTime,
           to: toTime
         },
-        sendMail
+        isSendMail: sendMail
       });
 
       toast.success("Attendance marked successfully!");
