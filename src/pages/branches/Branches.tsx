@@ -25,16 +25,7 @@ import {
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Badge } from "../../components/ui/badge"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../components/ui/alert-dialog";
+import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
 // We might need teachers for HOD selection
 // Assuming we have teacher service ready to fetch potential HODs. If not, simple text input for now.
 // Actually let's assume HOD is a text input ID or Name for simplicity unless requested otherwise.
@@ -196,20 +187,18 @@ export default function Branches() {
       </Card>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the branch "{branches.find(b => b._id === deletingId)?.name}".
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        open={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        title="Are you sure?"
+        description={
+          <>
+            This action cannot be undone. This will permanently delete the branch "{branches.find(b => b._id === deletingId)?.name}".
+          </>
+        }
+        verificationText={branches.find(b => b._id === deletingId)?.name || ""}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

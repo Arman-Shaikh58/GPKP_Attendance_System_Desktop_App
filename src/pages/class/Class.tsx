@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import MyBreadCrumb from "@/components/App_Components/MyBreadCrumb";
 import { useParams, useNavigate } from "react-router-dom";
-import { ClassData, getClassInfo, deleteClass } from "@/api/class.service";
+import { ClassData, getClassInfo, deleteClass, getClassDefaulters, Defaulter } from "@/api/class.service";
 import { removeStudentFromClass, editStudent, addStudentToClass } from "@/api/student.service";
 import { getClassName } from "@/utils/getClassName";
-import { School, Info, RemoveFormattingIcon, Delete, Edit } from "lucide-react";
+import { School, Info, Delete, Edit, AlertTriangle, ChevronDown, ChevronUp, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Table,
   TableHeader,
@@ -34,24 +34,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
 import { Label } from "@/components/ui/label";
 import { Student } from "@/api/student.service";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 const Class = () => {
   const [loading, setLoading] = useState(true);
   const [classInfo, setClassInfo] = useState<ClassData>();
+  const [defaulters, setDefaulters] = useState<Defaulter[]>([]);
   const [selectedBatchId, setSelectedBatchId] = useState<string>("");
+  const [expandedDefaulterId, setExpandedDefaulterId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const { id } = useParams();
@@ -75,9 +70,15 @@ const Class = () => {
 
   const fetchData = async () => {
     try {
+      if (!id) return;
       // Don't set loading to true here to avoid full page flicker on refresh
-      const res = await getClassInfo(id);
+      const [res, defaultersRes] = await Promise.all([
+        getClassInfo(id),
+        getClassDefaulters(id)
+      ]);
+
       setClassInfo(res);
+      setDefaulters(defaultersRes);
 
       // Preserve selected batch if it exists, otherwise select first
       if (res.batches?.length > 0 && !selectedBatchId) {
@@ -106,7 +107,7 @@ const Class = () => {
     }
 
     try {
-      await addStudentToClass(classInfo._id, newStudentName, newStudentRoll);
+      await addStudentToClass(classInfo!._id, newStudentName, newStudentRoll);
       setNewStudentName("");
       setNewStudentRoll("");
       setIsAddOpen(false);
@@ -195,15 +196,25 @@ const Class = () => {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <MyBreadCrumb />
 
-      <div className="flex items-center gap-4">
-        <div className="p-3 bg-primary/10 rounded-xl">
-          <School className="w-8 h-8 text-primary" />
+      <div className="flex items-center gap-4 justify-between">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-xl">
+            <School className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">
+              {getClassName(
+                classInfo.year,
+                classInfo.branch.abbrivation,
+                classInfo.division
+              )}
+            </h1>
+            <p className="text-muted-foreground flex items-center gap-2">
+              {classInfo.branch.name} • {classInfo.year} Year • Div {classInfo.division}
+            </p>
+          </div>
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">Class Details</h1>
-          <p className="text-muted-foreground">Manage students and class information.</p>
-        </div>
-        <div className="ml-auto">
           <Button
             variant="destructive"
             onClick={() => setIsDeleteClassOpen(true)}
@@ -213,132 +224,220 @@ const Class = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Class Info Card - Takes 1 column on wide screens, full on mobile */}
-        <Card className="md:col-span-1 h-fit">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Info className="w-5 h-5 text-muted-foreground" />
-              Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      <Card className="min-h-[600px]">
+        <CardHeader>
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Class Name</p>
-              <h2 className="text-2xl font-bold">
-                {getClassName(
-                  classInfo.year,
-                  classInfo.branch.abbrivation,
-                  classInfo.division
-                )}
-              </h2>
+              <CardTitle>Class Management</CardTitle>
+              <CardDescription>Manage students and view attendance reports.</CardDescription>
             </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="students" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+              <TabsTrigger value="students">Students List</TabsTrigger>
+              <TabsTrigger value="defaulters">Defaulters List</TabsTrigger>
+            </TabsList>
 
-            <div className="space-y-2">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Branch</p>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="font-medium underline decoration-dotted underline-offset-4 cursor-help">
-                      {classInfo.branch.name}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Code: {classInfo.branch.code}</p>
-                    <p>Abbr: {classInfo.branch.abbrivation}</p>
-                  </TooltipContent>
-                </Tooltip>
+            <TabsContent value="students" className="mt-4 space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-medium">Students</h3>
+                  <Badge variant="secondary">{currentBatch?.students.length || 0} Students</Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={selectedBatchId}
+                    onValueChange={(value) => setSelectedBatchId(value)}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select Batch" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classInfo.batches.map((batch) => (
+                        <SelectItem key={batch._id} value={batch._id}>
+                          {batch.name} ({batch.from}-{batch.to})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Button
+                    className="ml-2 bg-primary text-primary-foreground"
+                    onClick={() => setIsAddOpen(true)}
+                  >
+                    Add Student
+                  </Button>
+
+                  <Input
+                    placeholder="Search students..."
+                    className="w-[200px]"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Year</p>
-                <p className="font-medium">{classInfo.year} Year</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Division</p>
-                <p className="font-medium">{classInfo.division}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Students List - Takes 2 columns */}
-        <Card className="md:col-span-2">
-          <CardHeader className="pb-3">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <CardTitle>Students</CardTitle>
-              <div className="flex items-center gap-2">
-                <Select
-                  value={selectedBatchId}
-                  onValueChange={(value) => setSelectedBatchId(value)}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select Batch" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classInfo.batches.map((batch) => (
-                      <SelectItem key={batch._id} value={batch._id}>
-                        {batch.name} ({batch.from}-{batch.to})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Button
-                  className="ml-2 bg-primary text-primary-foreground"
-                  onClick={() => setIsAddOpen(true)}
-                >
-                  Add Student
-                </Button>
-
-                <Input
-                  placeholder="Search students..."
-                  className="w-[200px]"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Roll No</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStudents?.length ? (
-                  filteredStudents.map((student) => (
-                    <TableRow key={student._id}>
-                      <TableCell className="font-medium">{student.roll_num}</TableCell>
-                      <TableCell>{student.name}</TableCell>
-                      <TableCell className="flex gap-2">
-                        <Delete
-                          onClick={() => handleDeleteClick(student)}
-                          className="text-red-600 h-5 w-5 cursor-pointer hover:opacity-80"
-                        />
-                        <Edit
-                          onClick={() => handleEditClick(student)}
-                          className="text-primary h -5 w-5 cursor-pointer hover:opacity-80"
-                        />
-
-                      </TableCell>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Roll No</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">
-                      No students found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredStudents?.length ? (
+                      filteredStudents.map((student) => (
+                        <TableRow key={student._id}>
+                          <TableCell className="font-medium">{student.roll_num}</TableCell>
+                          <TableCell>{student.name}</TableCell>
+                          <TableCell className="flex gap-2 justify-end">
+                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(student)}>
+                              <Edit className="h-4 w-4 text-primary" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(student)}>
+                              <Delete className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                          No students found.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="defaulters" className="mt-4 space-y-4">
+              <div className="rounded-md border border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/10 p-4">
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <AlertTriangle className="h-5 w-5" />
+                  <h3 className="font-medium">Attendance Alert</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  The following students have less than 75% aggregate attendance. Click on a row to view detailed breakdown.
+                </p>
+              </div>
+
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]"></TableHead>
+                      <TableHead>Roll No</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Total Conducted</TableHead>
+                      <TableHead>Total Present</TableHead>
+                      <TableHead className="text-right">Attendance %</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {defaulters.length > 0 ? (
+                      defaulters.map((student) => (
+                        <React.Fragment key={student._id}>
+                          <TableRow
+                            className="cursor-pointer hover:bg-muted/50"
+                            onClick={() => setExpandedDefaulterId(expandedDefaulterId === student._id ? null : student._id)}
+                          >
+                            <TableCell>
+                              {expandedDefaulterId === student._id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            </TableCell>
+                            <TableCell className="font-medium">{student.roll_num}</TableCell>
+                            <TableCell>{student.name}</TableCell>
+                            <TableCell>{student.totalConducted}</TableCell>
+                            <TableCell>{student.totalPresent}</TableCell>
+                            <TableCell className="text-right font-bold text-red-600">
+                              {student.percentage}%
+                            </TableCell>
+                          </TableRow>
+                          {expandedDefaulterId === student._id && (
+                            <TableRow className="bg-muted/30 hover:bg-muted/30">
+                              <TableCell colSpan={6} className="p-4">
+                                <div className="rounded-md border bg-background">
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow>
+                                        <TableHead>Subject</TableHead>
+                                        <TableHead>Type</TableHead>
+                                        <TableHead>Conducted</TableHead>
+                                        <TableHead>Present</TableHead>
+                                        <TableHead>Percentage</TableHead>
+                                        <TableHead>Absent Info</TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {student.details?.map((stat, idx) => (
+                                        <TableRow key={idx}>
+                                          <TableCell className="font-medium">
+                                            {stat.subjectName}
+                                            <span className="text-xs text-muted-foreground block">{stat.subjectCode}</span>
+                                          </TableCell>
+                                          <TableCell>
+                                            <Badge variant="outline" className="capitalize">{stat.type}</Badge>
+                                          </TableCell>
+                                          <TableCell>{stat.conducted}</TableCell>
+                                          <TableCell>{stat.present}</TableCell>
+                                          <TableCell>
+                                            <span className={stat.percentage < 75 ? "text-red-600 font-medium" : "text-green-600 font-medium"}>
+                                              {stat.percentage}%
+                                            </span>
+                                          </TableCell>
+                                          <TableCell>
+                                            {stat.absentDates.length > 0 ? (
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <Badge variant="secondary" className="cursor-help gap-1">
+                                                    <Calendar className="h-3 w-3" />
+                                                    {stat.absentDates.length} Days Absent
+                                                  </Badge>
+                                                </TooltipTrigger>
+                                                <TooltipContent className="max-w-[300px]">
+                                                  <p className="font-medium mb-2">Absent Dates:</p>
+                                                  <div className="flex flex-wrap gap-2">
+                                                    {stat.absentDates.map((date, i) => (
+                                                      <span key={i} className="text-xs bg-primary bg-muted px-1.5 py-0.5 rounded">
+                                                        {new Date(date).toLocaleDateString()}
+                                                      </span>
+                                                    ))}
+                                                  </div>
+                                                </TooltipContent>
+                                              </Tooltip>
+                                            ) : (
+                                              <span className="text-muted-foreground text-sm">-</span>
+                                            )}
+                                          </TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </React.Fragment>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                          No defaulters found! One happy class 🎉
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
 
       {/* Add Student Dialog */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
@@ -424,52 +523,52 @@ const Class = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the student{" "}
-              <span className="font-semibold text-foreground">
-                {selectedStudent?.name}
-              </span>{" "}
-              from this class.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Are you absolutely sure?"
+        description={
+          <>
+            This action cannot be undone. This will permanently delete the student{" "}
+            <span className="font-semibold text-foreground">
+              {selectedStudent?.name}
+            </span>{" "}
+            from this class.
+          </>
+        }
+        verificationText={selectedStudent?.name || ""}
+        onConfirm={handleDeleteConfirm}
+      />
 
       {/* Delete Class Confirmation Dialog */}
-      <AlertDialog open={isDeleteClassOpen} onOpenChange={setIsDeleteClassOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the class{" "}
-              <span className="font-semibold text-foreground">
-                {classInfo && getClassName(
-                  classInfo.year,
-                  classInfo.branch.abbrivation,
-                  classInfo.division
-                )}
-              </span>{" "}
-              and all its associated data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteClass} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete Class
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        open={isDeleteClassOpen}
+        onOpenChange={setIsDeleteClassOpen}
+        title="Are you absolutely sure?"
+        description={
+          <>
+            This action cannot be undone. This will permanently delete the class{" "}
+            <span className="font-semibold text-foreground">
+              {classInfo && getClassName(
+                classInfo.year,
+                classInfo.branch.abbrivation,
+                classInfo.division
+              )}
+            </span>{" "}
+            and all its associated data.
+          </>
+        }
+        verificationText={
+          classInfo
+            ? getClassName(
+              classInfo.year,
+              classInfo.branch.abbrivation,
+              classInfo.division
+            )
+            : ""
+        }
+        onConfirm={handleDeleteClass}
+      />
     </div >
   );
 };

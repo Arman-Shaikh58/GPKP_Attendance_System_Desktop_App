@@ -74,3 +74,34 @@ export const deleteClass = async (classId: string) => {
     throw error;
   }
 };
+
+export interface SubjectStat {
+  subjectId: string;
+  subjectName: string;
+  subjectCode: string;
+  type: 'lecture' | 'practical';
+  conducted: number;
+  present: number;
+  percentage: number;
+  absentDates: string[]; // ISO date strings
+}
+
+export interface Defaulter {
+  _id: string;
+  name: string;
+  roll_num: string;
+  totalConducted: number;
+  totalPresent: number;
+  percentage: number;
+  details: SubjectStat[];
+}
+
+export const getClassDefaulters = async (classId: string): Promise<Defaulter[]> => {
+  try {
+    const response = await apiClient.get(`/class/class/${classId}/defaulters`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to retrieve class defaulters");
+    throw error;
+  }
+};

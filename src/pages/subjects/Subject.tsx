@@ -35,16 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../components/ui/alert-dialog";
+import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
 import { useNavigate } from 'react-router-dom';
 
 export default function Subject() {
@@ -475,20 +466,18 @@ export default function Subject() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the subject "{subjects.find(s => s._id === deletingId)?.name}".
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        open={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        title="Are you sure?"
+        description={
+          <>
+            This action cannot be undone. This will permanently delete the subject "{subjects.find(s => s._id === deletingId)?.name}".
+          </>
+        }
+        verificationText={subjects.find(s => s._id === deletingId)?.name || ""}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

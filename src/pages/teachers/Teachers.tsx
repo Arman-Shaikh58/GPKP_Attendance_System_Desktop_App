@@ -24,16 +24,7 @@ import {
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Badge } from "../../components/ui/badge"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../components/ui/alert-dialog";
+import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
 
 export default function Teachers() {
   const [teachers, setTeachers] = useState<ITeacher[]>([]);
@@ -206,20 +197,18 @@ export default function Teachers() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the teacher account "{teachers.find(t => t._id === deletingId)?.username}".
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        open={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        title="Are you sure?"
+        description={
+          <>
+            This action cannot be undone. This will permanently delete the teacher account "{teachers.find(t => t._id === deletingId)?.username}".
+          </>
+        }
+        verificationText={teachers.find(t => t._id === deletingId)?.username || ""}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }
