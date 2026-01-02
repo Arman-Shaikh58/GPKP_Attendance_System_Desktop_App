@@ -28,6 +28,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { getClassName } from '@/utils/getClassName';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 export default function Attendance() {
@@ -38,6 +39,7 @@ export default function Attendance() {
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedBatch, setSelectedBatch] = useState<string>('');
   const [attendanceType, setAttendanceType] = useState<'lecture' | 'practical'>('lecture');
+  const [sendMail, setSendMail] = useState<boolean>(true);
 
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -168,7 +170,8 @@ export default function Attendance() {
         timeslot: {
           from: fromTime,
           to: toTime
-        }
+        },
+        sendMail
       });
 
       toast.success("Attendance marked successfully!");
@@ -262,6 +265,10 @@ export default function Attendance() {
                 </Select>
               </div>
             )}
+            <div className="flex items-center gap-2">
+              <Checkbox checked={sendMail} onCheckedChange={(checked) => setSendMail(checked as boolean)} />
+              <label className="text-sm font-medium">Send Mail</label>
+            </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Date</label>

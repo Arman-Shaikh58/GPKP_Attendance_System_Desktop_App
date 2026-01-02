@@ -16,6 +16,7 @@ export interface AttendanceData {
     };
     class_id?: string; // Optional for posting, present in response
     _id?: string; // Present in response
+    sendMail?: boolean;
 }
 
 
