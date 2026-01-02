@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import MyBreadCrumb from "@/components/App_Components/MyBreadCrumb";
 import { useParams, useNavigate } from "react-router-dom";
 import { ClassData, getClassInfo, deleteClass, getClassDefaulters, Defaulter } from "@/api/class.service";
+import * as XLSX from "xlsx";
 import { removeStudentFromClass, editStudent, addStudentToClass } from "@/api/student.service";
 import { getClassName } from "@/utils/getClassName";
-import { School, Info, Delete, Edit, AlertTriangle, ChevronDown, ChevronUp, Calendar } from "lucide-react";
+import { School, Info, Delete, Edit, AlertTriangle, ChevronDown, ChevronUp, Calendar, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -40,6 +41,14 @@ import { Student } from "@/api/student.service";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Class = () => {
   const [loading, setLoading] = useState(true);
@@ -78,7 +87,22 @@ const Class = () => {
       ]);
 
       setClassInfo(res);
-      setDefaulters(defaultersRes);
+
+      // Sort defaulters: 2+ subjects first, then by roll number
+      const sortedDefaulters = defaultersRes.sort((a, b) => {
+        const aCount = a.details.filter((d) => d.percentage < 75).length;
+        const bCount = b.details.filter((d) => d.percentage < 75).length;
+
+        if (aCount >= 2 && bCount < 2) return -1;
+        if (bCount >= 2 && aCount < 2) return 1;
+
+        // If both are >= 2 or both < 2, sort by count descending
+        if (aCount !== bCount) return bCount - aCount;
+
+        return 0; // logic in backend already sorts by roll no
+      });
+
+      setDefaulters(sortedDefaulters);
 
       // Preserve selected batch if it exists, otherwise select first
       if (res.batches?.length > 0 && !selectedBatchId) {
@@ -176,6 +200,61 @@ const Class = () => {
     } catch (error) {
       console.error("Error deleting class", error);
     }
+  };
+
+  const handleExportDefaulters = (type: 'lecture' | 'practical') => {
+    if (!defaulters.length) return;
+
+    // Group by subject
+    const subjectMap = new Map<string, string[]>();
+
+    defaulters.forEach(student => {
+      student.details.forEach(stat => {
+        if (stat.percentage < 75 && stat.type === type) {
+          const subjectKey = stat.subjectAbbrivation || stat.subjectCode; // Use abbreviation or code
+          if (!subjectMap.has(subjectKey)) {
+            subjectMap.set(subjectKey, []);
+          }
+          subjectMap.get(subjectKey)?.push(student.roll_num);
+        }
+      });
+    });
+
+    if (subjectMap.size === 0) {
+      toast.info(`No defaulters found for ${type}`);
+      return;
+    }
+
+    const reportData: any[] = [];
+
+    let srNo = 1;
+    subjectMap.forEach((rolls, subject) => {
+      // Sort roll numbers numerically if possible
+      rolls.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+      reportData.push({
+        "Sr.No.": srNo++,
+        "Subjects": subject,
+        "RollNumbers": rolls.join(", ")
+      });
+    });
+
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(reportData);
+
+    // Auto-adjust column width (optional, but good for UX)
+    const wscols = [
+      { wch: 6 },  // Sr.No.
+      { wch: 30 }, // Subject
+      { wch: 50 }, // RollNumbers
+    ];
+    ws['!cols'] = wscols;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, `${type === 'lecture' ? 'Lectures' : 'Practicals'} Defaulters`);
+
+    const fileName = `Defaulters-${type}-${classInfo?.year}-${classInfo?.branch.abbrivation}-${classInfo?.division}.xlsx`;
+    XLSX.writeFile(wb, fileName);
   };
 
   if (loading || !classInfo) {
@@ -327,6 +406,27 @@ const Class = () => {
                 </p>
               </div>
 
+              <div className="flex justify-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Download className="mr-2 h-4 w-4" />
+                      Generate List
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Select Type</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleExportDefaulters('lecture')}>
+                      For Lectures
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExportDefaulters('practical')}>
+                      For Practicals
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
@@ -336,6 +436,7 @@ const Class = () => {
                       <TableHead>Name</TableHead>
                       <TableHead>Total Conducted</TableHead>
                       <TableHead>Total Present</TableHead>
+                      <TableHead>Defaulter Subjects</TableHead>
                       <TableHead className="text-right">Attendance %</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -354,6 +455,53 @@ const Class = () => {
                             <TableCell>{student.name}</TableCell>
                             <TableCell>{student.totalConducted}</TableCell>
                             <TableCell>{student.totalPresent}</TableCell>
+                            <TableCell>
+                              {(() => {
+                                const activeDefaulters = student.details.filter(d => d.percentage < 75);
+                                if (activeDefaulters.length === 0) return <span className="text-muted-foreground">-</span>;
+
+                                const formatSub = (d: any) => `${d.subjectAbbrivation || d.subjectCode}`;
+
+                                if (activeDefaulters.length <= 2) {
+                                  return (
+                                    <div className="flex flex-wrap gap-1">
+                                      {activeDefaulters.map((d, i) => (
+                                        <Badge key={i} variant="outline" className="text-xs border-red-200 text-red-700 bg-red-50">
+                                          {formatSub(d)}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="flex items-center gap-1">
+                                        {activeDefaulters.slice(0, 2).map((d, i) => (
+                                          <Badge key={i} variant="outline" className="text-xs border-red-200 text-red-700 bg-red-50">
+                                            {formatSub(d)}
+                                          </Badge>
+                                        ))}
+                                        <Badge variant="secondary" className="text-xs cursor-help">
+                                          +{activeDefaulters.length - 2} more
+                                        </Badge>
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <div className="flex flex-col gap-1">
+                                        <p className="font-semibold text-xs mb-1">Defaulter In:</p>
+                                        {activeDefaulters.map((d, i) => (
+                                          <div key={i} className="text-xs">
+                                            {d.subjectName} ({d.type}) - <span className="text-red-500">{d.percentage}%</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                );
+                              })()}
+                            </TableCell>
                             <TableCell className="text-right font-bold text-red-600">
                               {student.percentage}%
                             </TableCell>

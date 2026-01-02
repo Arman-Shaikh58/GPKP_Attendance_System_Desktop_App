@@ -79,6 +79,7 @@ export interface SubjectStat {
   subjectId: string;
   subjectName: string;
   subjectCode: string;
+  subjectAbbrivation: string;
   type: 'lecture' | 'practical';
   conducted: number;
   present: number;

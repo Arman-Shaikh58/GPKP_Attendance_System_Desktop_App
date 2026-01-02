@@ -266,7 +266,7 @@ export default function Attendance() {
               </div>
             )}
             <div className="flex items-center gap-2">
-              <Checkbox checked={sendMail} onCheckedChange={(checked) => setSendMail(checked as boolean)} />
+              <Checkbox checked={sendMail} onCheckedChange={() => setSendMail(!sendMail)} />
               <label className="text-sm font-medium">Send Mail</label>
             </div>
 
